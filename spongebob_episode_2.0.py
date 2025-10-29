@@ -16,32 +16,24 @@ st.set_page_config(
 SPONGEBOB_LOGO_URL = "https://www.pinclipart.com/picdir/big/566-5662181_spongebob-logo-spongebob-squarepants-logo-clipart.png"
 BIKINI_BOTTOM_BG_URL = "https://wallpapers.com/images/hd/spongebob-flower-background-2928-x-1431-gmoyqoppdrorzpj9.jpg" # Contoh placeholder gambar bawah laut
 
-# Custom CSS untuk tema Bikini Bottom (DIPERBARUI untuk membuat background lebih gelap)
+# Custom CSS untuk tema Bikini Bottom (CSS OVERLAY DIPERBAIKI)
 st.markdown(
     f"""
     <style>
     /* Mengatur background dengan gambar Bikini Bottom dan menambahkan overlay gelap */
     .stApp {{
-        background-image: url({BIKINI_BOTTOM_BG_URL});
+        /* Menerapkan linear-gradient (overlay hitam 40% transparan) di atas URL gambar */
+        background: 
+            linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
+            url("{BIKINI_BOTTOM_BG_URL}");
         background-size: cover;
         background-attachment: fixed;
         background-repeat: no-repeat;
     }}
-    /* Menambahkan overlay gelap pada latar belakang utama */
-    .stApp:before {{
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.4); /* Overlay hitam 40% transparan */
-        z-index: -1;
-    }}
 
     /* Membuat sidebar dan konten utama lebih transparan agar background terlihat */
     .st-emotion-cache-18ni4ap, .st-emotion-cache-12fmw37, .st-emotion-cache-10trblm {{
-        background-color: rgba(255, 255, 255, 0.9); /* Putih semi-transparan, dinaikkan sedikit untuk visibilitas */
+        background-color: rgba(255, 255, 255, 0.9); /* Putih semi-transparan untuk konten */
         border-radius: 10px;
         padding: 20px;
     }}
