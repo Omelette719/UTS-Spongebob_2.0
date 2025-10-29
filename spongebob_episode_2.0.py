@@ -1,12 +1,13 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import altair as alt
 import re
+import plotly.express as px
+import plotly.graph_objects as go
 
 # --- Konfigurasi Halaman & Tema ---
 st.set_page_config(
-    page_title="Dashboard Episode SpongeBob SquarePants",
+    page_title="Dashboard Episode SpongeBob SquarePants (Plotly)",
     page_icon="🍍",
     layout="wide"
 )
@@ -28,7 +29,7 @@ st.markdown(
         background-repeat: no-repeat;
     }}
     /* Membuat sidebar dan konten utama lebih transparan agar background terlihat */
-    .st-emotion-cache-18ni4ap, .st-emotion-cache-12fmw37 {{
+    .st-emotion-cache-18ni4ap, .st-emotion-cache-12fmw37, .st-emotion-cache-10trblm {{
         background-color: rgba(255, 255, 255, 0.85); /* Putih transparan */
         border-radius: 10px;
         padding: 20px;
@@ -98,7 +99,6 @@ def load_data(file_path):
             if writer.strip():
                 all_writers.add(writer.strip())
     
-    # Drop rows where 'Airdate' is NaT after cleaning (should be none)
     df = df.dropna(subset=['Airdate'])
 
     return df, sorted(list(all_writers))
@@ -184,48 +184,51 @@ with col3:
 st.markdown("---")
 
 # ==============================================================================
-# VISUALISASI 1: ANALISIS DESKRIPTIF - Tren Penonton dari Waktu ke Waktu
+# VISUALISASI 1: ANALISIS DESKRIPTIF - Tren Penonton dari Waktu ke Waktu (Plotly Line Chart)
 # ==============================================================================
 st.header("📈 1. Tren Historis: Bagaimana Viewership Berubah Seiring Waktu?")
 st.markdown("**Deskriptif:** Visualisasi ini menunjukkan perubahan rata-rata penonton per musim, memberikan gambaran umum tentang tren popularitas serial ini.")
 
 # Agregasi data per musim
 df_viewership = df_filtered.groupby('Season №')['U.S. viewers (millions)'].mean().reset_index()
-df_viewership.columns = ['Season №', 'Avg_Viewers']
+df_viewership.columns = ['Season_No', 'Avg_Viewers']
 
-line_chart = alt.Chart(df_viewership).mark_line(point=True, color='blue').encode(
-    x=alt.X('Season №', title='Nomor Musim', axis=alt.Axis(tickMinStep=1)),
-    y=alt.Y('Avg_Viewers', title='Rata-rata Penonton (Jutaan)'),
-    tooltip=['Season №', alt.Tooltip('Avg_Viewers', format='.2f')]
-).properties(
-    title='Rata-rata Penonton Episode per Musim'
-).interactive()
+# Plotly Line Chart
+fig1 = px.line(
+    df_viewership,
+    x='Season_No',
+    y='Avg_Viewers',
+    markers=True,
+    title='Rata-rata Penonton Episode per Musim',
+    labels={'Season_No': 'Nomor Musim', 'Avg_Viewers': 'Rata-rata Penonton (Jutaan)'}
+)
+fig1.update_traces(line_color='#00008B', marker_color='#FFD700', marker_size=8) # Biru dan Emas
+fig1.update_layout(xaxis=dict(dtick=1)) # Memastikan semua musim terlihat
+fig1.update_layout(hovermode="x unified") # Interaktivitas yang lebih baik
 
-st.altair_chart(line_chart, use_container_width=True)
+st.plotly_chart(fig1, use_container_width=True)
 
 st.markdown("""
 <p style='font-style: italic; color: #555;'>
-<strong>Insight Deskriptif:</strong> Garis ini dapat mengidentifikasi puncak popularitas (Musim dengan penonton tertinggi) dan fase penurunan atau pemulihan.
+<strong>Insight Deskriptif:</strong> Garis ini dapat mengidentifikasi puncak popularitas (Musim dengan penonton tertinggi) dan fase penurunan atau pemulihan, yang bisa mengarah ke analisis lebih dalam.
 </p>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
 
 # ==============================================================================
-# VISUALISASI 2: ANALISIS DIAGNOSTIK - Karakter Paling Sering Muncul
+# VISUALISASI 2: ANALISIS DIAGNOSTIK - Karakter Paling Sering Muncul (Plotly Bar Chart)
 # ==============================================================================
 st.header("🐙 2. Analisis Konten: Siapa Karakter Utama di Bikini Bottom?")
-st.markdown("**Diagnostik:** Analisis ini menggali komposisi konten, mengidentifikasi karakter mana yang paling sering digunakan, yang berpotensi menjelaskan mengapa episode tertentu berkinerja baik atau buruk (tergantung keterlibatan karakter).")
+st.markdown("**Diagnostik:** Analisis ini menggali komposisi konten, mengidentifikasi karakter mana yang paling sering digunakan, yang berpotensi menjelaskan mengapa episode tertentu berkinerja baik atau buruk.")
 
 # Menghitung frekuensi karakter
 character_counts = {}
 for char_list in df_filtered['characters'].dropna():
     cleaned_chars = str(char_list).strip("[]'\"").split(',')
     for char in cleaned_chars:
-        # Menghilangkan spasi dan karakter lain
         char_name = char.strip()
-        # Fokus pada karakter utama (SpongeBob, Patrick, Squidward, dll.) dengan filter sederhana
-        if len(char_name) > 2 and char_name not in ["Incidentals", "Incidental"]: # Hindari karakter umum yang tidak penting
+        if len(char_name) > 2 and char_name not in ["Incidentals", "Incidental", "Incidental 2", "Incidental 3", "Fred"]:
              character_counts[char_name] = character_counts.get(char_name, 0) + 1
 
 # Top 10 Karakter
@@ -234,49 +237,65 @@ top_characters = pd.DataFrame(
     columns=['Character', 'Appearances']
 )
 
-bar_chart = alt.Chart(top_characters).mark_bar(color='#FFAC33').encode(
-    x=alt.X('Appearances', title='Jumlah Kemunculan Episode'),
-    y=alt.Y('Character', sort='-x', title='Karakter'),
-    tooltip=['Character', 'Appearances']
-).properties(
-    title='Top 10 Karakter Paling Sering Muncul'
+# Plotly Bar Chart
+fig2 = px.bar(
+    top_characters.sort_values(by='Appearances', ascending=True), # Sort ascending untuk Plotly agar urutan tetap Top-Down
+    x='Appearances',
+    y='Character',
+    orientation='h',
+    title='Top 10 Karakter Paling Sering Muncul',
+    labels={'Appearances': 'Jumlah Kemunculan Episode'},
+    color='Appearances',
+    color_continuous_scale=px.colors.sequential.Tealgrn # Warna ala air laut
 )
+fig2.update_layout(yaxis={'categoryorder':'total ascending'}) # Memastikan urutan dari atas ke bawah
 
-st.altair_chart(bar_chart, use_container_width=True)
+st.plotly_chart(fig2, use_container_width=True)
 
 st.markdown("""
 <p style='font-style: italic; color: #555;'>
-<strong>Insight Diagnostik:</strong> Dominasi karakter tertentu (misalnya, SpongeBob atau Patrick) sangat diharapkan, tetapi melihat karakter sekunder yang sering muncul dapat menjelaskan fokus cerita dan mengapa beberapa episode memiliki nuansa yang berbeda.
+<strong>Insight Diagnostik:</strong> Dominasi karakter utama seperti SpongeBob dan Patrick terkonfirmasi. Jika ada karakter sekunder yang naik peringkat, ini mungkin menandakan perubahan fokus naratif dalam episode-episode terbaru.
 </p>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
 
 # ==============================================================================
-# VISUALISASI 3: ANALISIS PRESKRIPTIF/DIAGNOSTIK - Viewers Per Minute vs. Writer Count
+# VISUALISASI 3: ANALISIS PRESKRIPTIF/DIAGNOSTIK - Viewers Per Minute vs. Writer Count (Plotly Scatter Plot)
 # ==============================================================================
 st.header("🧠 3. Analisis Efisiensi: Seberapa Efektif Tim Penulis?")
 st.markdown("**Preskriptif/Diagnostik:** Plot ini menguji hubungan antara kompleksitas tim penulis (`Lead_Writers_Count`) dengan efisiensi penonton (`Viewers_Per_Minute`). Tujuannya adalah untuk mengidentifikasi 'Sweet Spot' (jumlah penulis optimal) yang menghasilkan rasio penonton per menit tertinggi.")
 
-scatter_chart = alt.Chart(df_filtered).mark_circle(size=60, opacity=0.6, color='green').encode(
-    x=alt.X('Lead_Writers_Count', title='Jumlah Penulis Utama', axis=alt.Axis(tickMinStep=1)),
-    y=alt.Y('Viewers_Per_Minute', title='Penonton (Jutaan) per Menit'),
-    tooltip=['title', 'Season №', 'Lead_Writers_Count', alt.Tooltip('Viewers_Per_Minute', format='.3f')]
-).properties(
-    title='Efisiensi Penonton (VPM) vs. Jumlah Penulis Episode'
-).interactive()
-
-# Menambahkan garis rata-rata untuk membantu analisis
-mean_vpm = df_filtered['Viewers_Per_Minute'].mean()
-mean_vpm_line = alt.Chart(pd.DataFrame({'mean_vpm': [mean_vpm]})).mark_rule(color='red', strokeDash=[5, 5]).encode(
-    y='mean_vpm'
+# Plotly Scatter Plot
+fig3 = px.scatter(
+    df_filtered,
+    x='Lead_Writers_Count',
+    y='Viewers_Per_Minute',
+    hover_data=['title', 'Season №'],
+    title='Efisiensi Penonton (VPM) vs. Jumlah Penulis Episode',
+    labels={'Lead_Writers_Count': 'Jumlah Penulis Utama', 'Viewers_Per_Minute': 'Penonton (Jutaan) per Menit'},
+    color='Season №', # Warna berdasarkan Musim
+    color_continuous_scale=px.colors.sequential.Rainbow
 )
 
-st.altair_chart(scatter_chart + mean_vpm_line, use_container_width=True)
+# Menambahkan garis rata-rata VPM (garis preskriptif)
+mean_vpm = df_filtered['Viewers_Per_Minute'].mean()
+fig3.add_hline(
+    y=mean_vpm, 
+    line_dash="dash", 
+    line_color="red", 
+    annotation_text=f"Rata-rata VPM: {mean_vpm:.2f}",
+    annotation_position="bottom right"
+)
+
+fig3.update_layout(xaxis=dict(dtick=1))
+fig3.update_traces(marker=dict(size=10, opacity=0.7, line=dict(width=1, color='Black'))) # Memperjelas titik
+
+st.plotly_chart(fig3, use_container_width=True)
 
 st.markdown(f"""
 <p style='font-style: italic; color: #555;'>
-<strong>Insight Preskriptif:</strong> Titik-titik di kuadran atas (VPM tinggi) menunjukkan episode yang sangat efektif. Jika ada klaster titik dengan VPM tinggi pada jumlah penulis tertentu (misalnya, 2 atau 3), ini bisa menjadi **rekomendasi preskriptif** untuk mengoptimalkan ukuran tim penulis di masa depan. Episode dengan VPM sangat tinggi (`>{mean_vpm:.3f}`) dan jumlah penulis rendah mungkin dianggap yang paling efisien.
+<strong>Insight Preskriptif:</strong> Titik-titik di atas garis merah (VPM tinggi) dan di sebelah kiri (jumlah penulis rendah, 1-3) menunjukkan episode yang paling efisien dalam hal biaya dan daya tarik. **Rekomendasi:** Studio dapat menganalisis episode-episode ini untuk mereplikasi formula penulisan yang sukses (jumlah penulis optimal dan fokus cerita) demi memaksimalkan efisiensi penonton di masa depan.
 </p>
 """, unsafe_allow_html=True)
 
