@@ -14,7 +14,7 @@ st.set_page_config(
 
 # URL untuk gambar online (logo dan background)
 SPONGEBOB_LOGO_URL = "https://www.pinclipart.com/picdir/big/566-5662181_spongebob-logo-spongebob-squarepants-logo-clipart.png"
-BIKINI_BOTTOM_BG_URL = "https://tse4.mm.bing.net/th/id/OIP.Wn_vlf2S9mQK8oBfRNz43gHaDn?w=2928&h=1431&rs=1&pid=ImgDetMain&o=7&rm=3" # Contoh placeholder gambar bawah laut
+BIKINI_BOTTOM_BG_URL = "https://wallpapers.com/images/hd/spongebob-flower-background-2928-x-1431-gmoyqoppdrorzpj9.jpg" # Contoh placeholder gambar bawah laut
 
 # Custom CSS untuk tema Bikini Bottom (DIPERBARUI untuk membuat background lebih gelap)
 st.markdown(
