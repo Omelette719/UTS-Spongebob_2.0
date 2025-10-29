@@ -13,8 +13,8 @@ st.set_page_config(
 )
 
 # URL untuk gambar online (logo dan background)
-SPONGEBOB_LOGO_URL = "https://upload.wikimedia.wikimedia.org/wikipedia/en/thumb/3/33/SpongeBob_SquarePants_logo.svg/1200px-SpongeBob_SquarePants_logo.svg.png"
-BIKINI_BOTTOM_BG_URL = "https://i.imgur.com/8Q0v9gX.png" # Contoh placeholder gambar bawah laut
+SPONGEBOB_LOGO_URL = "https://www.pinclipart.com/picdir/big/566-5662181_spongebob-logo-spongebob-squarepants-logo-clipart.png"
+BIKINI_BOTTOM_BG_URL = "https://wallpapers.com/images/hd/spongebob-flower-background-2928-x-1431-gmoyqoppdrorzpj9.jpg"
 
 # Custom CSS untuk tema Bikini Bottom (NILAI OVERLAY DIPERBARUI MENJADI 0.6)
 st.markdown(
@@ -24,7 +24,7 @@ st.markdown(
     .stApp {{
         /* Menerapkan linear-gradient (overlay hitam 60% transparan) di atas URL gambar */
         background: 
-            linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+            linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
             url("{BIKINI_BOTTOM_BG_URL}");
         background-size: cover;
         background-attachment: fixed;
