@@ -4,6 +4,7 @@ import numpy as np
 import re
 import plotly.express as px
 import plotly.graph_objects as go
+# Pastikan 'statsmodels' ada di requirements.txt untuk 'trendline="lowess"'
 
 # --- Konfigurasi Halaman & Tema ---
 st.set_page_config(
@@ -113,7 +114,8 @@ except FileNotFoundError:
 
 # --- Sidebar: Filter Dashboard ---
 with st.sidebar:
-    st.image(SPONGEBOB_LOGO_URL, width='stretch') # Diperbaiki: use_container_width -> width='stretch'
+    # PERBAIKAN: Menggunakan width='stretch' untuk st.image
+    st.image(SPONGEBOB_LOGO_URL, width='stretch') 
     st.markdown("---")
     st.subheader("🛠️ Filter Dashboard")
     
@@ -166,7 +168,7 @@ with st.expander("Konteks: Sejarah Singkat dan Analisis Bisnis", expanded=False)
 
 st.markdown("---")
 
-## Bagian I: Ringkasan Metrik & Analisis Deskriptif
+## Bagian I: Ringkasan Metrik & Analisis DeskriptIF
 
 st.header("⭐ Ringkasan Data & Metrik Utama")
 col1, col2, col3 = st.columns(3)
@@ -202,7 +204,9 @@ with col_vis_1:
         labels={'Airdate_Year': 'Tahun Tayang', 'U.S. viewers (millions)': 'Rata-rata Penonton (Jutaan)'}
     )
     fig1.update_traces(line_color='#00008B', marker_color='#FFD700', marker_size=8)
-    st.plotly_chart(fig1, width='stretch') # Diperbaiki: use_container_width -> width='stretch'
+    
+    # PERBAIKAN: Menggunakan use_container_width=True (cara standar)
+    st.plotly_chart(fig1, use_container_width=True) 
 
 with col_vis_2:
     st.subheader("2. Stabilitas Viewership Episode per Musim")
@@ -221,7 +225,8 @@ with col_vis_2:
         color='Season_Category', 
         color_discrete_sequence=px.colors.qualitative.Plotly
     )
-    st.plotly_chart(fig2, width='stretch') # Diperbaiki: use_container_width -> width='stretch'
+    # PERBAIKAN: Menggunakan use_container_width=True
+    st.plotly_chart(fig2, use_container_width=True) 
 
 st.markdown("---")
 
@@ -253,7 +258,9 @@ with col_vis_3:
         color='Avg_Viewers', color_continuous_scale=px.colors.sequential.Sunset_r
     )
     fig3.update_layout(yaxis={'categoryorder':'total ascending'}) 
-    st.plotly_chart(fig3, width='stretch') # Diperbaiki: use_container_width -> width='stretch'
+    
+    # PERBAIKAN: Menggunakan use_container_width=True
+    st.plotly_chart(fig3, use_container_width=True) 
 
 with col_vis_6:
     st.subheader("4. Fokus Karakter Utama per Musim")
@@ -282,13 +289,13 @@ with col_vis_6:
         value_name='Proportion'
     )
 
-    # --- PERBAIKAN UTAMA: Menggunakan go.Figure dan go.Heatmap ---
+    # Menggunakan go.Figure dan go.Heatmap
     fig6 = go.Figure(data=go.Heatmap(
         x=heatmap_data_long['Character'],
         y=heatmap_data_long['Season_No'],
         z=heatmap_data_long['Proportion'],
         colorscale=px.colors.sequential.Blues,
-        colorbar=dict(title="Proporsi Kemunculan")
+        colorbar=dict(title="Proporsi")
     ))
 
     fig6.update_layout(
@@ -298,7 +305,8 @@ with col_vis_6:
         yaxis=dict(dtick=1)
     )
     
-    st.plotly_chart(fig6, width='stretch') # Diperbaiki: use_container_width -> width='stretch'
+    # PERBAIKAN: Menggunakan use_container_width=True
+    st.plotly_chart(fig6, use_container_width=True)
 
 st.markdown("---")
 
@@ -314,17 +322,19 @@ with col_vis_4:
     st.markdown("**Analisis: Preskriptif** | *Pertanyaan:* Apakah ada durasi tayang optimal yang menghasilkan *viewership* tertinggi?")
     
     # Data Prep V4: Scatter Plot Durasi
+    # (Membutuhkan 'statsmodels' di requirements.txt)
     fig4 = px.scatter(
         df_filtered,
         x='Runtime_Min',
         y='U.S. viewers (millions)',
-        trendline="lowess", # Garis tren untuk mengidentifikasi "Sweet Spot" durasi
+        trendline="lowess", 
         hover_data=['title', 'Season №'],
         title='Durasi Episode (Menit) vs. Viewership',
         labels={'Runtime_Min': 'Durasi Episode (Menit)', 'U.S. viewers (millions)': 'Penonton (Jutaan)'},
         color='Season №', color_continuous_scale=px.colors.sequential.Rainbow
     )
-    st.plotly_chart(fig4, width='stretch') # Diperbaiki: use_container_width -> width='stretch'
+    # PERBAIKAN: Menggunakan use_container_width=True
+    st.plotly_chart(fig4, use_container_width=True) 
 
 
 with col_vis_5:
@@ -351,7 +361,8 @@ with col_vis_5:
     fig5.add_hline(y=avg_vpm, line_dash="dash", line_color="red", annotation_text=f"Avg VPM Global: {avg_vpm:.2f}")
     fig5.update_layout(xaxis=dict(dtick=1))
 
-    st.plotly_chart(fig5, width='stretch') # Diperbaiki: use_container_width -> width='stretch'
+    # PERBAIKAN: Menggunakan use_container_width=True
+    st.plotly_chart(fig5, use_container_width=True) 
 
 st.markdown("---")
-st.info("✅ Semua kesalahan telah diperbaiki. Dashboard BI Anda sekarang memiliki 6 visualisasi yang berfungsi penuh dan beragam!")
+st.info("✅ Error 'statsmodels' dan peringatan 'use_container_width' telah diatasi. Pastikan 'statsmodels' ada di requirements.txt Anda!")
