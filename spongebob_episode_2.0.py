@@ -14,7 +14,7 @@ st.set_page_config(
 
 # URL untuk gambar online (logo dan background)
 SPONGEBOB_LOGO_URL = "https://www.pinclipart.com/picdir/big/566-5662181_spongebob-logo-spongebob-squarepants-logo-clipart.png"
-BIKINI_BOTTOM_BG_URL = "https://wallpapers.com/images/hd/spongebob-flower-background-2928-x-1431-gmoyqoppdrorzpj9.jpg" 
+BIKINI_BOTTOM_BG_URL = "https://wallpapers.com/images/hd/spongebob-flower-background-2928-x-1431-gmoyqoppdrorzpj9.jpg"
 
 # Custom CSS untuk tema Bikini Bottom (Overlay 0.6)
 st.markdown(
@@ -271,10 +271,13 @@ with col_vis_6:
     heatmap_data = char_count_df.groupby('Season №')[MAIN_CHARS].sum()
     heatmap_data = heatmap_data.apply(lambda x: x / x.sum(), axis=1).fillna(0) # Proporsi penampilan dalam musim
 
-    # --- PERBAIKAN: Mengubah wide-form ke long-form untuk Heatmap ---
+    # --- PERBAIKAN UTAMA: Mengubah wide-form ke long-form dan rename kolom ---
     heatmap_data_reset = heatmap_data.reset_index() 
+    # Mengganti nama kolom bermasalah
+    heatmap_data_reset = heatmap_data_reset.rename(columns={'Season №': 'Season_No'})
+    
     heatmap_data_long = heatmap_data_reset.melt(
-        id_vars='Season №', 
+        id_vars='Season_No', # Menggunakan nama kolom yang sudah diperbaiki
         value_vars=MAIN_CHARS,
         var_name='Character',
         value_name='Proportion'
@@ -283,11 +286,11 @@ with col_vis_6:
     fig6 = px.heatmap(
         heatmap_data_long,
         x='Character',
-        y='Season №', # Sekarang 'Season №' adalah kolom yang bisa diakses
+        y='Season_No', # Menggunakan nama kolom yang sudah diperbaiki
         z='Proportion',
         color_continuous_scale=px.colors.sequential.Blues,
         title='Proporsi Fokus Karakter Utama (Per Musim)',
-        labels={'Season №': 'Nomor Musim', 'Proportion': 'Proporsi Kemunculan', 'Character': 'Karakter'}
+        labels={'Season_No': 'Nomor Musim', 'Proportion': 'Proporsi Kemunculan', 'Character': 'Karakter'}
     )
     fig6.update_layout(yaxis=dict(dtick=1))
     st.plotly_chart(fig6, use_container_width=True)
