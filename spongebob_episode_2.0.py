@@ -24,7 +24,7 @@ st.markdown(
     .stApp {{
         /* Menerapkan linear-gradient (overlay hitam 60% transparan) di atas URL gambar */
         background: 
-            linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+            linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
             url("{BIKINI_BOTTOM_BG_URL}");
         background-size: cover;
         background-attachment: fixed;
@@ -189,7 +189,7 @@ col_vis_1, col_vis_2 = st.columns(2)
 
 with col_vis_1:
     st.subheader("1. Tren Viewership Tahunan")
-    st.markdown("**Analisis: Deskriptif** | *Pertanyaan:* Bagaimana popularitas SpongeBob (penonton) berubah dari tahun ke tahun?")
+    st.markdown("**Analisis: Deskriptif** | *Pertanyaan:* Bagaimana popularitas SpongeBob (diukur dari jumlah penonton) berubah dari tahun ke tahun?")
     
     # Data Prep V1: Rata-rata Penonton per Tahun
     df_trend = df_filtered.copy()
@@ -206,14 +206,20 @@ with col_vis_1:
 
 with col_vis_2:
     st.subheader("2. Stabilitas Viewership Episode per Musim")
-    st.markdown("**Analisis: Diagnostik** | *Pertanyaan:* Seberapa stabil penonton dalam setiap musim? Apakah ada outlier yang ekstrem?")
+    st.markdown("**Analisis: Diagnostik** | *Pertanyaan:* Seberapa stabil (variatif) penonton dalam setiap musim? Apakah Musim X memiliki rentang penonton yang lebar atau stabil?")
     
-    # Data Prep V2: Box Plot
+    # --- PERBAIKAN: Mengubah Season № menjadi string untuk Box Plot ---
+    df_temp = df_filtered.copy()
+    df_temp['Season_Category'] = df_temp['Season №'].astype(str)
+    
     fig2 = px.box(
-        df_filtered, x='Season №', y='U.S. viewers (millions)',
+        df_temp, 
+        x='Season_Category', 
+        y='U.S. viewers (millions)', 
         title='Distribusi & Stabilitas Viewership Episode per Musim',
-        labels={'Season №': 'Nomor Musim', 'U.S. viewers (millions)': 'Penonton (Jutaan)'},
-        color='Season №', color_continuous_scale=px.colors.sequential.Tealgrn
+        labels={'Season_Category': 'Nomor Musim', 'U.S. viewers (millions)': 'Penonton (Jutaan)'},
+        color='Season_Category', 
+        color_discrete_sequence=px.colors.qualitative.Plotly # Menggunakan warna diskrit
     )
     st.plotly_chart(fig2, use_container_width=True)
 
@@ -228,7 +234,7 @@ col_vis_3, col_vis_6 = st.columns(2)
 
 with col_vis_3:
     st.subheader("3. Peringkat Penulis Berdasarkan Rata-rata Penonton")
-    st.markdown("**Analisis: Diagnostik** | *Pertanyaan:* Siapakah 10 penulis individu yang paling sukses menarik penonton?")
+    st.markdown("**Analisis: Diagnostik** | *Pertanyaan:* Siapakah 10 penulis individu yang secara konsisten menghasilkan episode dengan rata-rata penonton tertinggi?")
     
     # Data Prep V3: Explode Writers
     writer_exploded = df_filtered.copy()
@@ -251,7 +257,7 @@ with col_vis_3:
 
 with col_vis_6:
     st.subheader("4. Fokus Karakter Utama per Musim")
-    st.markdown("**Analisis: Diagnostik** | *Pertanyaan:* Bagaimana fokus naratif pada karakter utama bergeser dari musim ke musim?")
+    st.markdown("**Analisis: Diagnostik** | *Pertanyaan:* Bagaimana alokasi fokus cerita pada karakter utama bergeser dari musim ke musim?")
 
     # Data Prep V6: Karakter Heatmap
     MAIN_CHARS = ['SpongeBob SquarePants', 'Patrick Star', 'Squidward Tentacles', 'Eugene H. Krabs', 'Sandy Cheeks']
@@ -260,13 +266,9 @@ with col_vis_6:
     
     for char in MAIN_CHARS:
         # Menghitung kemunculan dengan mencari nama karakter di kolom 'characters'
-        # Menggunakan regex untuk memastikan tidak terjadi false positive (misal: "Sandy Cheeks" vs "Sandy's")
         char_count_df[char] = char_count_df['characters'].fillna('').apply(lambda x: 1 if re.search(r'\b' + re.escape(char) + r'\b', x) else 0)
 
-    # Agregasi counts by season (count of episodes where character appeared)
     heatmap_data = char_count_df.groupby('Season №')[MAIN_CHARS].sum()
-    
-    # Normalisasi untuk membuat heatmap lebih mudah dibaca (opsional)
     heatmap_data = heatmap_data.apply(lambda x: x / x.sum(), axis=1).fillna(0) # Proporsi penampilan dalam musim
 
     fig6 = px.heatmap(
@@ -297,7 +299,7 @@ with col_vis_4:
         df_filtered,
         x='Runtime_Min',
         y='U.S. viewers (millions)',
-        trendline="lowess", # Garis tren untuk mengidentifikasi "Sweet Spot" durasi
+        trendline="lowess", # Menambahkan garis tren non-linear yang fleksibel
         hover_data=['title', 'Season №'],
         title='Durasi Episode (Menit) vs. Viewership',
         labels={'Runtime_Min': 'Durasi Episode (Menit)', 'U.S. viewers (millions)': 'Penonton (Jutaan)'},
@@ -306,7 +308,7 @@ with col_vis_4:
     st.plotly_chart(fig4, use_container_width=True)
     st.markdown(f"""
     <p style='font-style: italic; color: #777;'>
-    <strong>Tindakan Lanjutan:</strong> Analisis klaster titik tertinggi di sepanjang garis tren dapat memberikan rekomendasi durasi produksi (misalnya, jika 11.5 menit selalu di puncak, studio harus memprioritaskannya).
+    <strong>Tindakan Lanjutan:</strong> Menganalisis klaster titik tertinggi di sepanjang garis tren dapat memberikan rekomendasi durasi produksi (misalnya, 11-12 menit) yang paling berpotensi menarik penonton.
     </p>
     """, unsafe_allow_html=True)
 
@@ -338,9 +340,9 @@ with col_vis_5:
     st.plotly_chart(fig5, use_container_width=True)
     st.markdown(f"""
     <p style='font-style: italic; color: #777;'>
-    <strong>Tindakan Lanjutan:</strong> Titik-titik di atas garis merah dengan ukuran *bubble* besar (banyak episode) dan Penulis sedikit (X-axis kecil) menunjukkan kombinasi tim kreatif yang paling efisien dan berhasil. Ini adalah rekomendasi untuk struktur tim di masa depan.
+    <strong>Tindakan Lanjutan:</strong> Titik-titik besar yang berada di atas garis merah (VPM efisien) dan X-axis kecil (Penulis sedikit) menunjukkan struktur tim kreatif paling efisien.
     </p>
     """, unsafe_allow_html=True)
 
 st.markdown("---")
-st.info("👋 Dashboard BI Analisis Selesai. Dashboard ini memberikan 6 visualisasi yang beragam dan dapat menjawab berbagai pertanyaan bisnis mulai dari tingkat Deskriptif hingga Preskriptif.")
+st.info("👋 Dashboard BI Analisis Selesai. Selamat Bertugas!")
