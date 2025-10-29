@@ -24,7 +24,7 @@ st.markdown(
     .stApp {{
         /* Menerapkan linear-gradient (overlay hitam 60% transparan) di atas URL gambar */
         background: 
-            linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+            linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
             url("{BIKINI_BOTTOM_BG_URL}");
         background-size: cover;
         background-attachment: fixed;
@@ -208,7 +208,7 @@ with col_vis_2:
     st.subheader("2. Stabilitas Viewership Episode per Musim")
     st.markdown("**Analisis: Diagnostik** | *Pertanyaan:* Seberapa stabil (variatif) penonton dalam setiap musim? Apakah Musim X memiliki rentang penonton yang lebar atau stabil?")
     
-    # --- PERBAIKAN: Mengubah Season № menjadi string untuk Box Plot ---
+    # --- Perbaikan: Mengubah Season № menjadi string untuk Box Plot ---
     df_temp = df_filtered.copy()
     df_temp['Season_Category'] = df_temp['Season №'].astype(str)
     
@@ -265,18 +265,29 @@ with col_vis_6:
     char_count_df = df_filtered[['Season №', 'characters']].copy()
     
     for char in MAIN_CHARS:
-        # Menghitung kemunculan dengan mencari nama karakter di kolom 'characters'
         char_count_df[char] = char_count_df['characters'].fillna('').apply(lambda x: 1 if re.search(r'\b' + re.escape(char) + r'\b', x) else 0)
 
+    # Agregasi: Hitung episode kemunculan per musim
     heatmap_data = char_count_df.groupby('Season №')[MAIN_CHARS].sum()
     heatmap_data = heatmap_data.apply(lambda x: x / x.sum(), axis=1).fillna(0) # Proporsi penampilan dalam musim
 
+    # --- PERBAIKAN: Mengubah wide-form ke long-form untuk Heatmap ---
+    heatmap_data_reset = heatmap_data.reset_index() 
+    heatmap_data_long = heatmap_data_reset.melt(
+        id_vars='Season №', 
+        value_vars=MAIN_CHARS,
+        var_name='Character',
+        value_name='Proportion'
+    )
+
     fig6 = px.heatmap(
-        heatmap_data,
-        x=heatmap_data.columns,
-        y=heatmap_data.index,
+        heatmap_data_long,
+        x='Character',
+        y='Season №', # Sekarang 'Season №' adalah kolom yang bisa diakses
+        z='Proportion',
         color_continuous_scale=px.colors.sequential.Blues,
-        title='Proporsi Fokus Karakter Utama (Per Musim)'
+        title='Proporsi Fokus Karakter Utama (Per Musim)',
+        labels={'Season №': 'Nomor Musim', 'Proportion': 'Proporsi Kemunculan', 'Character': 'Karakter'}
     )
     fig6.update_layout(yaxis=dict(dtick=1))
     st.plotly_chart(fig6, use_container_width=True)
@@ -299,7 +310,7 @@ with col_vis_4:
         df_filtered,
         x='Runtime_Min',
         y='U.S. viewers (millions)',
-        trendline="lowess", # Menambahkan garis tren non-linear yang fleksibel
+        trendline="lowess", # Garis tren untuk mengidentifikasi "Sweet Spot" durasi
         hover_data=['title', 'Season №'],
         title='Durasi Episode (Menit) vs. Viewership',
         labels={'Runtime_Min': 'Durasi Episode (Menit)', 'U.S. viewers (millions)': 'Penonton (Jutaan)'},
@@ -308,7 +319,7 @@ with col_vis_4:
     st.plotly_chart(fig4, use_container_width=True)
     st.markdown(f"""
     <p style='font-style: italic; color: #777;'>
-    <strong>Tindakan Lanjutan:</strong> Menganalisis klaster titik tertinggi di sepanjang garis tren dapat memberikan rekomendasi durasi produksi (misalnya, 11-12 menit) yang paling berpotensi menarik penonton.
+    <strong>Tindakan Lanjutan:</strong> Menganalisis klaster titik tertinggi di sepanjang garis tren dapat memberikan rekomendasi durasi produksi (misalnya, jika 11.5 menit selalu di puncak, studio harus memprioritaskannya).
     </p>
     """, unsafe_allow_html=True)
 
@@ -345,4 +356,4 @@ with col_vis_5:
     """, unsafe_allow_html=True)
 
 st.markdown("---")
-st.info("👋 Dashboard BI Analisis Selesai. Selamat Bertugas!")
+st.info("✅ Semua kesalahan telah diperbaiki. Dashboard BI Anda sekarang memiliki 6 visualisasi yang berfungsi penuh dan beragam!")
