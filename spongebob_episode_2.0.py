@@ -101,8 +101,8 @@ def load_and_clean_data():
 # --- Kode Aplikasi Streamlit ---
 
 # URL untuk tema
-BG_IMAGE_URL = "https://wallpapercave.com/wp/wp2439160.jpg"
-LOGO_IMAGE_URL = "https://upload.wikimedia.org/wikipedia/en/thumb/5/5c/SpongeBob_SquarePants_logo.svg/1200px-SpongeBob_SquarePants_logo.svg.png"
+BG_IMAGE_URL = "https://wallpapers.com/images/hd/spongebob-flower-background-2928-x-1431-gmoyqoppdrorzpj9.jpg"
+LOGO_IMAGE_URL = "https://www.pinclipart.com/picdir/big/566-5662181_spongebob-logo-spongebob-squarepants-logo-clipart.png"
 
 # 1. Konfigurasi Halaman
 st.set_page_config(
