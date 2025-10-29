@@ -13,9 +13,8 @@ st.set_page_config(
 )
 
 # URL untuk gambar online (logo dan background)
-# Menggunakan placeholder URL yang relevan dan mudah diakses secara umum
-SPONGEBOB_LOGO_URL = "https://upload.wikimedia.org/wikipedia/en/thumb/3/33/SpongeBob_SquarePants_logo.svg/1200px-SpongeBob_SquarePants_logo.svg.png"
-BIKINI_BOTTOM_BG_URL = "https://i.imgur.com/8Q0v9gX.png" # Contoh placeholder gambar bawah laut
+SPONGEBOB_LOGO_URL = "https://www.pinclipart.com/picdir/big/566-5662181_spongebob-logo-spongebob-squarepants-logo-clipart.png"
+BIKINI_BOTTOM_BG_URL = "https://tse4.mm.bing.net/th/id/OIP.Wn_vlf2S9mQK8oBfRNz43gHaDn?w=2928&h=1431&rs=1&pid=ImgDetMain&o=7&rm=3" # Contoh placeholder gambar bawah laut
 
 # Custom CSS untuk tema Bikini Bottom
 st.markdown(
@@ -111,17 +110,9 @@ except FileNotFoundError:
     st.stop()
 
 
-# --- Sidebar: Logo dan Sejarah ---
+# --- Sidebar: Filter Dashboard ---
 with st.sidebar:
-    st.image(SPONGEBOB_LOGO_URL, use_column_width=True)
-    st.markdown("---")
-    st.header("🍍 Sejarah Singkat SpongeBob SquarePants")
-    st.markdown("""
-    SpongeBob SquarePants diciptakan oleh ahli biologi laut dan animator **Stephen Hillenburg**.
-    Episode pertamanya tayang pada **1 Mei 1999** setelah Nickelodeon Kids' Choice Awards.
-    Ide dasarnya berasal dari komik edukasi Hillenburg, *The Intertidal Zone*, yang menampilkan karakter spons awal.
-    Acara ini dengan cepat menjadi salah satu serial animasi terpanjang dan paling populer, disukai oleh anak-anak maupun orang dewasa di seluruh dunia karena humornya yang unik dan karakter-karakternya yang ikonik.
-    """)
+    st.image(SPONGEBOB_LOGO_URL, use_container_width=True) # Menggunakan parameter yang diperbarui
     st.markdown("---")
     st.subheader("🛠️ Filter Dashboard")
     
@@ -163,7 +154,18 @@ if df_filtered.empty:
     st.stop()
 
 # --- Main Dashboard ---
-st.title("📊 Analisis Mendalam Episode SpongeBob SquarePants")
+st.title("📊 Dashboard Analisis Episode SpongeBob SquarePants")
+
+# --- Sejarah Singkat Ditempatkan di sini ---
+with st.expander("Klik untuk membaca Sejarah Singkat SpongeBob SquarePants", expanded=False):
+    st.markdown("""
+    **SpongeBob SquarePants** diciptakan oleh ahli biologi laut dan animator **Stephen Hillenburg**.
+    Episode pertamanya tayang pada **1 Mei 1999** setelah Nickelodeon Kids' Choice Awards.
+    Ide dasarnya berasal dari komik edukasi Hillenburg, *The Intertidal Zone*, yang menampilkan karakter spons awal.
+    Acara ini dengan cepat menjadi salah satu serial animasi terpanjang dan paling populer, disukai oleh anak-anak maupun orang dewasa di seluruh dunia karena humornya yang unik dan karakter-karakternya yang ikonik.
+    """)
+
+st.markdown("---")
 
 # --- Bagian 1: Metrik Utama (Deskriptif) ---
 st.header("⭐ Metrik Utama Episode Terpilih")
@@ -187,7 +189,7 @@ st.markdown("---")
 # VISUALISASI 1: ANALISIS DESKRIPTIF - Tren Penonton dari Waktu ke Waktu (Plotly Line Chart)
 # ==============================================================================
 st.header("📈 1. Tren Historis: Bagaimana Viewership Berubah Seiring Waktu?")
-st.markdown("**Deskriptif:** Visualisasi ini menunjukkan perubahan rata-rata penonton per musim, memberikan gambaran umum tentang tren popularitas serial ini.")
+st.markdown("**Alur Cerita: Deskriptif** | Visualisasi ini menunjukkan perubahan rata-rata penonton per musim, memberikan gambaran umum tentang tren popularitas serial ini.")
 
 # Agregasi data per musim
 df_viewership = df_filtered.groupby('Season №')['U.S. viewers (millions)'].mean().reset_index()
@@ -203,14 +205,14 @@ fig1 = px.line(
     labels={'Season_No': 'Nomor Musim', 'Avg_Viewers': 'Rata-rata Penonton (Jutaan)'}
 )
 fig1.update_traces(line_color='#00008B', marker_color='#FFD700', marker_size=8) # Biru dan Emas
-fig1.update_layout(xaxis=dict(dtick=1)) # Memastikan semua musim terlihat
-fig1.update_layout(hovermode="x unified") # Interaktivitas yang lebih baik
+fig1.update_layout(xaxis=dict(dtick=1))
+fig1.update_layout(hovermode="x unified") 
 
 st.plotly_chart(fig1, use_container_width=True)
 
 st.markdown("""
 <p style='font-style: italic; color: #555;'>
-<strong>Insight Deskriptif:</strong> Garis ini dapat mengidentifikasi puncak popularitas (Musim dengan penonton tertinggi) dan fase penurunan atau pemulihan, yang bisa mengarah ke analisis lebih dalam.
+<strong>Insight Deskriptif:</strong> Garis ini dapat mengidentifikasi puncak popularitas (Musim dengan penonton tertinggi) dan fase penurunan atau pemulihan. Penurunan atau kenaikan tajam menjadi pertanyaan yang perlu didiagnosis pada visualisasi berikutnya.
 </p>
 """, unsafe_allow_html=True)
 
@@ -220,7 +222,7 @@ st.markdown("---")
 # VISUALISASI 2: ANALISIS DIAGNOSTIK - Karakter Paling Sering Muncul (Plotly Bar Chart)
 # ==============================================================================
 st.header("🐙 2. Analisis Konten: Siapa Karakter Utama di Bikini Bottom?")
-st.markdown("**Diagnostik:** Analisis ini menggali komposisi konten, mengidentifikasi karakter mana yang paling sering digunakan, yang berpotensi menjelaskan mengapa episode tertentu berkinerja baik atau buruk.")
+st.markdown("**Alur Cerita: Diagnostik** | Analisis ini menggali komposisi konten, mengidentifikasi karakter mana yang paling sering digunakan, berpotensi menjelaskan mengapa episode di puncak popularitas (dari Visualisasi 1) berkinerja baik atau buruk (tergantung keterlibatan karakter).")
 
 # Menghitung frekuensi karakter
 character_counts = {}
@@ -239,7 +241,7 @@ top_characters = pd.DataFrame(
 
 # Plotly Bar Chart
 fig2 = px.bar(
-    top_characters.sort_values(by='Appearances', ascending=True), # Sort ascending untuk Plotly agar urutan tetap Top-Down
+    top_characters.sort_values(by='Appearances', ascending=True),
     x='Appearances',
     y='Character',
     orientation='h',
@@ -248,13 +250,13 @@ fig2 = px.bar(
     color='Appearances',
     color_continuous_scale=px.colors.sequential.Tealgrn # Warna ala air laut
 )
-fig2.update_layout(yaxis={'categoryorder':'total ascending'}) # Memastikan urutan dari atas ke bawah
+fig2.update_layout(yaxis={'categoryorder':'total ascending'}) 
 
 st.plotly_chart(fig2, use_container_width=True)
 
 st.markdown("""
 <p style='font-style: italic; color: #555;'>
-<strong>Insight Diagnostik:</strong> Dominasi karakter utama seperti SpongeBob dan Patrick terkonfirmasi. Jika ada karakter sekunder yang naik peringkat, ini mungkin menandakan perubahan fokus naratif dalam episode-episode terbaru.
+<strong>Insight Diagnostik:</strong> Dominasi karakter utama seperti SpongeBob dan Patrick terkonfirmasi. Jika ada karakter sekunder yang naik peringkat, ini mungkin menandakan perubahan fokus naratif dalam episode-episode terpilih yang perlu dikaitkan dengan hasil *Viewership* dari Visualisasi 1.
 </p>
 """, unsafe_allow_html=True)
 
@@ -264,7 +266,7 @@ st.markdown("---")
 # VISUALISASI 3: ANALISIS PRESKRIPTIF/DIAGNOSTIK - Viewers Per Minute vs. Writer Count (Plotly Scatter Plot)
 # ==============================================================================
 st.header("🧠 3. Analisis Efisiensi: Seberapa Efektif Tim Penulis?")
-st.markdown("**Preskriptif/Diagnostik:** Plot ini menguji hubungan antara kompleksitas tim penulis (`Lead_Writers_Count`) dengan efisiensi penonton (`Viewers_Per_Minute`). Tujuannya adalah untuk mengidentifikasi 'Sweet Spot' (jumlah penulis optimal) yang menghasilkan rasio penonton per menit tertinggi.")
+st.markdown("**Alur Cerita: Preskriptif/Diagnostik** | Plot ini menguji hubungan antara kompleksitas tim penulis (`Lead_Writers_Count`) dengan efisiensi penonton (`Viewers_Per_Minute`). Tujuannya adalah untuk memberikan rekomendasi optimasi sumber daya kreatif di masa depan.")
 
 # Plotly Scatter Plot
 fig3 = px.scatter(
@@ -274,7 +276,7 @@ fig3 = px.scatter(
     hover_data=['title', 'Season №'],
     title='Efisiensi Penonton (VPM) vs. Jumlah Penulis Episode',
     labels={'Lead_Writers_Count': 'Jumlah Penulis Utama', 'Viewers_Per_Minute': 'Penonton (Jutaan) per Menit'},
-    color='Season №', # Warna berdasarkan Musim
+    color='Season №',
     color_continuous_scale=px.colors.sequential.Rainbow
 )
 
@@ -289,13 +291,13 @@ fig3.add_hline(
 )
 
 fig3.update_layout(xaxis=dict(dtick=1))
-fig3.update_traces(marker=dict(size=10, opacity=0.7, line=dict(width=1, color='Black'))) # Memperjelas titik
+fig3.update_traces(marker=dict(size=10, opacity=0.7, line=dict(width=1, color='Black')))
 
 st.plotly_chart(fig3, use_container_width=True)
 
 st.markdown(f"""
 <p style='font-style: italic; color: #555;'>
-<strong>Insight Preskriptif:</strong> Titik-titik di atas garis merah (VPM tinggi) dan di sebelah kiri (jumlah penulis rendah, 1-3) menunjukkan episode yang paling efisien dalam hal biaya dan daya tarik. **Rekomendasi:** Studio dapat menganalisis episode-episode ini untuk mereplikasi formula penulisan yang sukses (jumlah penulis optimal dan fokus cerita) demi memaksimalkan efisiensi penonton di masa depan.
+<strong>Insight Preskriptif:</strong> Titik-titik di atas garis merah (VPM tinggi) dan di sebelah kiri (jumlah penulis rendah, 1-3) menunjukkan episode yang paling efisien dalam hal biaya dan daya tarik. **Tindakan Lanjutan (Preskriptif):** Studio harus menganalisis formula penulisan episode-episode ini untuk mereplikasi keberhasilannya, terutama menargetkan jumlah penulis 2-3 orang untuk efisiensi maksimal.
 </p>
 """, unsafe_allow_html=True)
 
