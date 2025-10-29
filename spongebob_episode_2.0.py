@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 
 # --- Konfigurasi Halaman & Tema ---
 st.set_page_config(
-    page_title="Dashboard Episode SpongeBob SquarePants (Plotly)",
+    page_title="Dashboard Analisis Episode SpongeBob SquarePants",
     page_icon="🍍",
     layout="wide"
 )
@@ -16,20 +16,32 @@ st.set_page_config(
 SPONGEBOB_LOGO_URL = "https://www.pinclipart.com/picdir/big/566-5662181_spongebob-logo-spongebob-squarepants-logo-clipart.png"
 BIKINI_BOTTOM_BG_URL = "https://tse4.mm.bing.net/th/id/OIP.Wn_vlf2S9mQK8oBfRNz43gHaDn?w=2928&h=1431&rs=1&pid=ImgDetMain&o=7&rm=3" # Contoh placeholder gambar bawah laut
 
-# Custom CSS untuk tema Bikini Bottom
+# Custom CSS untuk tema Bikini Bottom (DIPERBARUI untuk membuat background lebih gelap)
 st.markdown(
     f"""
     <style>
-    /* Mengatur background dengan gambar Bikini Bottom */
+    /* Mengatur background dengan gambar Bikini Bottom dan menambahkan overlay gelap */
     .stApp {{
         background-image: url({BIKINI_BOTTOM_BG_URL});
         background-size: cover;
         background-attachment: fixed;
         background-repeat: no-repeat;
     }}
+    /* Menambahkan overlay gelap pada latar belakang utama */
+    .stApp:before {{
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4); /* Overlay hitam 40% transparan */
+        z-index: -1;
+    }}
+
     /* Membuat sidebar dan konten utama lebih transparan agar background terlihat */
     .st-emotion-cache-18ni4ap, .st-emotion-cache-12fmw37, .st-emotion-cache-10trblm {{
-        background-color: rgba(255, 255, 255, 0.85); /* Putih transparan */
+        background-color: rgba(255, 255, 255, 0.9); /* Putih semi-transparan, dinaikkan sedikit untuk visibilitas */
         border-radius: 10px;
         padding: 20px;
     }}
@@ -112,15 +124,16 @@ except FileNotFoundError:
 
 # --- Sidebar: Filter Dashboard ---
 with st.sidebar:
-    st.image(SPONGEBOB_LOGO_URL, use_container_width=True) # Menggunakan parameter yang diperbarui
+    st.image(SPONGEBOB_LOGO_URL, use_container_width=True) 
     st.markdown("---")
     st.subheader("🛠️ Filter Dashboard")
     
     # --- Filter 1: Season ---
-    selected_seasons = st.multiselect(
-        "Pilih Musim (Season №):",
-        options=sorted(df['Season №'].unique()),
-        default=sorted(df['Season №'].unique())
+    season_options = ["All Seasons"] + [f"Season {s}" for s in sorted(df['Season №'].unique())]
+    selected_season_display = st.selectbox(
+        "Pilih Musim:",
+        options=season_options,
+        index=0
     )
 
     # --- Filter 2: Airdate Range ---
@@ -141,11 +154,17 @@ with st.sidebar:
     )
 
 # Menerapkan Filter
-df_filtered = df[df['Season №'].isin(selected_seasons)]
+if selected_season_display == "All Seasons":
+    df_filtered = df.copy()
+else:
+    selected_season_num = int(selected_season_display.split(' ')[1])
+    df_filtered = df[df['Season №'] == selected_season_num].copy()
+
 df_filtered = df_filtered[
     (df_filtered['Airdate'].dt.date >= date_range[0]) & 
     (df_filtered['Airdate'].dt.date <= date_range[1])
 ]
+
 if selected_writer != "Semua Penulis":
     df_filtered = df_filtered[df_filtered['Writer(s)'].fillna('').str.contains(selected_writer, case=False, na=False)]
 
@@ -191,7 +210,7 @@ st.markdown("---")
 st.header("📈 1. Tren Historis: Bagaimana Viewership Berubah Seiring Waktu?")
 st.markdown("**Alur Cerita: Deskriptif** | Visualisasi ini menunjukkan perubahan rata-rata penonton per musim, memberikan gambaran umum tentang tren popularitas serial ini.")
 
-# Agregasi data per musim
+# Agregasi data per musim 
 df_viewership = df_filtered.groupby('Season №')['U.S. viewers (millions)'].mean().reset_index()
 df_viewership.columns = ['Season_No', 'Avg_Viewers']
 
@@ -204,7 +223,7 @@ fig1 = px.line(
     title='Rata-rata Penonton Episode per Musim',
     labels={'Season_No': 'Nomor Musim', 'Avg_Viewers': 'Rata-rata Penonton (Jutaan)'}
 )
-fig1.update_traces(line_color='#00008B', marker_color='#FFD700', marker_size=8) # Biru dan Emas
+fig1.update_traces(line_color='#00008B', marker_color='#FFD700', marker_size=8) 
 fig1.update_layout(xaxis=dict(dtick=1))
 fig1.update_layout(hovermode="x unified") 
 
@@ -212,7 +231,7 @@ st.plotly_chart(fig1, use_container_width=True)
 
 st.markdown("""
 <p style='font-style: italic; color: #555;'>
-<strong>Insight Deskriptif:</strong> Garis ini dapat mengidentifikasi puncak popularitas (Musim dengan penonton tertinggi) dan fase penurunan atau pemulihan. Penurunan atau kenaikan tajam menjadi pertanyaan yang perlu didiagnosis pada visualisasi berikutnya.
+<strong>Insight Deskriptif:</strong> Garis ini dapat mengidentifikasi puncak popularitas dan fase penurunan atau pemulihan. Penurunan atau kenaikan tajam menjadi pertanyaan yang perlu didiagnosis pada visualisasi berikutnya.
 </p>
 """, unsafe_allow_html=True)
 
@@ -222,7 +241,7 @@ st.markdown("---")
 # VISUALISASI 2: ANALISIS DIAGNOSTIK - Karakter Paling Sering Muncul (Plotly Bar Chart)
 # ==============================================================================
 st.header("🐙 2. Analisis Konten: Siapa Karakter Utama di Bikini Bottom?")
-st.markdown("**Alur Cerita: Diagnostik** | Analisis ini menggali komposisi konten, mengidentifikasi karakter mana yang paling sering digunakan, berpotensi menjelaskan mengapa episode di puncak popularitas (dari Visualisasi 1) berkinerja baik atau buruk (tergantung keterlibatan karakter).")
+st.markdown("**Alur Cerita: Diagnostik** | Analisis ini menggali komposisi konten, mengidentifikasi karakter mana yang paling sering digunakan, berpotensi menjelaskan mengapa episode di puncak popularitas berkinerja baik atau buruk.")
 
 # Menghitung frekuensi karakter
 character_counts = {}
@@ -245,10 +264,10 @@ fig2 = px.bar(
     x='Appearances',
     y='Character',
     orientation='h',
-    title='Top 10 Karakter Paling Sering Muncul',
+    title=f'Top 10 Karakter Paling Sering Muncul pada {selected_season_display}',
     labels={'Appearances': 'Jumlah Kemunculan Episode'},
     color='Appearances',
-    color_continuous_scale=px.colors.sequential.Tealgrn # Warna ala air laut
+    color_continuous_scale=px.colors.sequential.Tealgrn
 )
 fig2.update_layout(yaxis={'categoryorder':'total ascending'}) 
 
@@ -256,7 +275,7 @@ st.plotly_chart(fig2, use_container_width=True)
 
 st.markdown("""
 <p style='font-style: italic; color: #555;'>
-<strong>Insight Diagnostik:</strong> Dominasi karakter utama seperti SpongeBob dan Patrick terkonfirmasi. Jika ada karakter sekunder yang naik peringkat, ini mungkin menandakan perubahan fokus naratif dalam episode-episode terpilih yang perlu dikaitkan dengan hasil *Viewership* dari Visualisasi 1.
+<strong>Insight Diagnostik:</strong> Visualisasi ini menunjukkan fokus naratif. Jika karakter sekunder sering muncul dalam musim yang memiliki *Viewership* tinggi, ini bisa menjadi faktor kesuksesan yang perlu dipertimbangkan.
 </p>
 """, unsafe_allow_html=True)
 
@@ -274,7 +293,7 @@ fig3 = px.scatter(
     x='Lead_Writers_Count',
     y='Viewers_Per_Minute',
     hover_data=['title', 'Season №'],
-    title='Efisiensi Penonton (VPM) vs. Jumlah Penulis Episode',
+    title=f'Efisiensi Penonton (VPM) vs. Jumlah Penulis Episode pada {selected_season_display}',
     labels={'Lead_Writers_Count': 'Jumlah Penulis Utama', 'Viewers_Per_Minute': 'Penonton (Jutaan) per Menit'},
     color='Season №',
     color_continuous_scale=px.colors.sequential.Rainbow
@@ -297,7 +316,7 @@ st.plotly_chart(fig3, use_container_width=True)
 
 st.markdown(f"""
 <p style='font-style: italic; color: #555;'>
-<strong>Insight Preskriptif:</strong> Titik-titik di atas garis merah (VPM tinggi) dan di sebelah kiri (jumlah penulis rendah, 1-3) menunjukkan episode yang paling efisien dalam hal biaya dan daya tarik. **Tindakan Lanjutan (Preskriptif):** Studio harus menganalisis formula penulisan episode-episode ini untuk mereplikasi keberhasilannya, terutama menargetkan jumlah penulis 2-3 orang untuk efisiensi maksimal.
+<strong>Insight Preskriptif:</strong> Titik-titik di atas garis merah (VPM tinggi) menunjukkan episode yang efisien. **Tindakan Lanjutan (Preskriptif):** Analisis dapat berfokus pada episode ini untuk merekomendasikan jumlah penulis optimal (biasanya 2-3 orang) yang paling sukses dalam menarik penonton per menit di musim yang dipilih.
 </p>
 """, unsafe_allow_html=True)
 
