@@ -1,5 +1,4 @@
 streamlit
-numpy
+pandas
 plotly
-altair
-pandasw
+numpy
