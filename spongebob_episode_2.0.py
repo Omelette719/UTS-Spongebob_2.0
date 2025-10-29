@@ -24,7 +24,7 @@ st.markdown(
     .stApp {{
         /* Menerapkan linear-gradient (overlay hitam 60% transparan) di atas URL gambar */
         background: 
-            linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+            linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
             url("{BIKINI_BOTTOM_BG_URL}");
         background-size: cover;
         background-attachment: fixed;
